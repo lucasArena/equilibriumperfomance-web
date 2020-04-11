@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { Form, Input } from '@rocketseat/unform';
+import { Form } from '@unform/web';
 import * as Yup from 'yup';
 
 import { signInRequest } from '~/store/modules/auth/actions';
@@ -9,6 +9,7 @@ import { signInRequest } from '~/store/modules/auth/actions';
 import { Container, SubmitButton } from './styles';
 
 import Loading from '~/components/Loading';
+import Input from '~/components/Input';
 
 import Logo from '~/assets/logo.png';
 

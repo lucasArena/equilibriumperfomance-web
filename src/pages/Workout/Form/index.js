@@ -20,7 +20,8 @@ import history from '~/services/history';
 
 export default function WorkoutForm({ location: { state } }) {
   const [exerciseOptions, setExerciseOptions] = useState([]);
-  const [exercises, setExercises] = useState(state ? state.exercises : []);
+  const [exercises, setExercises] = useState(state ? state.exercises : [{}]);
+  const [bands, setBands] = useState([]);
 
   const schema = Yup.object().shape({
     description: Yup.string().required('O campo descrição é obrigatório'),
@@ -81,15 +82,19 @@ export default function WorkoutForm({ location: { state } }) {
   }
 
   useEffect(() => {
-    async function loadExercises() {
+    async function loadSelectsOptions() {
       try {
-        const response = await api.get('/exercises');
-        setExerciseOptions(response);
+        const [exerciseResponse, bandResponse] = await Promise.all([
+          api.get('/exercises'),
+          api.get('/bands'),
+        ]);
+        setExerciseOptions(exerciseResponse.exercises);
+        setBands(bandResponse);
       } catch (err) {
         toast.error('Erro ao resgatar as pulseiras');
       }
     }
-    loadExercises();
+    loadSelectsOptions();
   }, []);
 
   return (
@@ -108,6 +113,15 @@ export default function WorkoutForm({ location: { state } }) {
                 placeholder="Sequencia do treino"
               />
             </InputGroup>
+            <InputGroup>
+              <Select name="band_id">
+                {bands.map((band) => (
+                  <option key={band.id} value={band.id}>
+                    {band.name}
+                  </option>
+                ))}
+              </Select>
+            </InputGroup>
           </GroupLine>
           <GroupLine>
             <h3>Exercicios</h3>
@@ -116,23 +130,24 @@ export default function WorkoutForm({ location: { state } }) {
             <GroupLine key={index}>
               <InputGroup>
                 <Select name={`exercises[${index}][exercise_id]`}>
-                  {exerciseOptions.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.name}
-                    </option>
-                  ))}
+                  {exerciseOptions.length &&
+                    exerciseOptions.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name}
+                      </option>
+                    ))}
                 </Select>
-              </InputGroup>
-              <InputGroup>
-                <Input
-                  name={`exercises[${index}][repetitions]`}
-                  placeholder="Repetições"
-                />
               </InputGroup>
               <InputGroup>
                 <Input
                   name={`exercises[${index}][series]`}
                   placeholder="Series"
+                />
+              </InputGroup>
+              <InputGroup>
+                <Input
+                  name={`exercises[${index}][repetitions]`}
+                  placeholder="Repetições"
                 />
               </InputGroup>
               <Input
@@ -150,7 +165,7 @@ export default function WorkoutForm({ location: { state } }) {
               </InputGroup>
             </GroupLine>
           ))}
-          <button type="submit">Salvar aluno</button>
+          <button type="submit">Salvar treino</button>
         </Form>
       </Container>
     </Wrapper>
